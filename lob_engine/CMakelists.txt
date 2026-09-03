@@ -1,0 +1,75 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.20)
+PROJECT(lob_engine LANGUAGES CXX C)
+
+SET(CMAKE_CXX_STANDARD 20)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+#setup boost library
+find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED COMPONENTS headers json)
+
+#kdb+ 
+find_package(Threads REQUIRED) # required for kdb+ c.o 
+
+#setup pybind11 library
+find_package(pybind11 CONFIG REQUIRED)
+
+#Find API_Connector project
+# add lob_engine folder 
+if (NOT TARGET API_Connector)
+    set(NET_ORCHESTRATE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../NetOrchestrate" CACHE PATH "Path to lob_engine directory")
+    if(EXISTS "${NET_ORCHESTRATE_DIR}")
+        add_subdirectory(${NET_ORCHESTRATE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/NetOrchestrate")
+    else()
+        message(FATAL_ERROR "Could not find NET_ORCHESTRATE_DIR: ${NET_ORCHESTRATE_DIR}")
+    endif()
+endif()
+
+#register kdb+ c api as imported target
+add_library(kdb STATIC IMPORTED)
+set_target_properties(kdb PROPERTIES IMPORTED_LOCATION
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/lib/c.o
+    LINKER_LANGUAGE C
+)
+
+if(NOT TARGET lob_engine)
+    add_library(lob_engine INTERFACE)
+endif()
+
+
+target_include_directories(lob_engine INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+#add external includes 
+target_include_directories(lob_engine INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/include)
+target_link_libraries(lob_engine INTERFACE ${Boost_LIBRARIES})
+target_link_libraries(lob_engine INTERFACE API_Connector Boost::headers) 
+
+#ASIO TESTS W/ KDB+ C API
+add_executable(test_api_asio
+    tests/test_api_asio.cpp
+)
+target_link_libraries(test_api_asio PRIVATE lob_engine)
+target_link_libraries(test_api_asio PRIVATE 
+    kdb
+    Threads::Threads
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    Boost::headers
+    Boost::json
+)
+
+
+#PYBIND11 TESTS
+pybind11_add_module(lob_pybind11
+    tests/test_pybind11.cpp
+)
+target_link_libraries(lob_pybind11 PRIVATE lob_engine)
+target_link_libraries(lob_pybind11 PRIVATE 
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    Boost::headers
+    Boost::json
+)

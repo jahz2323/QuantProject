@@ -1,0 +1,7 @@
+./vscode
+.env
+*./build 
+*./build/*
+./lib/*
+*./lib
+*./yaml
