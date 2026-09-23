@@ -8,6 +8,14 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+# In your CMakeLists.txt for Debug builds
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer")
+
+set(COMMON_SOURCES
+    src/Handlers.cpp
+    src/Connector.cpp
+    src/StreamConfig.cpp
+)
 
 #setup boost library
 find_package(OpenSSL REQUIRED)
@@ -50,6 +58,7 @@ if (NOT TARGET lob_engine)
 endif()
 
 
+
 target_include_directories(API_Connector INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 #add external includes 
 target_include_directories(API_Connector INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/include)
@@ -64,20 +73,16 @@ target_link_libraries(API_Connector INTERFACE
     Boost::chrono
     Threads::Threads
 )
-#require the external tool libs 
-target_link_libraries(
-    API_Connector INTERFACE
-    Allocators
+add_executable(COMBINED_STREAM_TEST
+    tests/test_combined_stream.cpp
+    ${COMMON_SOURCES}
 )
+target_link_libraries(COMBINED_STREAM_TEST PRIVATE API_Connector lob_engine imgui)
+target_link_libraries(API_Connector INTERFACE Allocators)
 
-add_executable(API_Connector_Tests
+add_executable(MAIN
     tests/main.cpp
+    ${COMMON_SOURCES}
 )
-
-target_link_libraries(API_Connector_Tests PRIVATE API_Connector)
-#link lob_engine
-target_link_libraries(API_Connector_Tests PRIVATE
-    lob_engine
-)
-
-
+target_link_libraries(MAIN PRIVATE API_Connector lob_engine imgui)
+target_link_libraries(API_Connector INTERFACE LoggingSystem)

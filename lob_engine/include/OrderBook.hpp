@@ -22,6 +22,8 @@
  * GetMidPrice() 
  * GetBidAskSpread()
  * GetOrderFlowImbalance()
+ * 
+ * 
  */
 #pragma once
 #include <iostream>
@@ -119,6 +121,7 @@ struct OrderBook
             
         }
     }
+
 };
 
 template <int depth = 20>
@@ -134,6 +137,11 @@ class TradeBook
     TradeBook(std::string symbol) : m_symbol(symbol), bids(), asks() {};
     ~TradeBook() = default;
     std::string getSymbol() const { return m_symbol; }
+
+    void GetOrderFlowImbalance() 
+    {
+        //OFI =  (sum(bid_depths) - sum(ask_depths)) / (sum(bid_depths) + sum(ask_depths) + epsilon)
+    }
 }; 
 
 

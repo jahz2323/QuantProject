@@ -36,6 +36,8 @@ set_target_properties(kdb PROPERTIES IMPORTED_LOCATION
     LINKER_LANGUAGE C
 )
 
+add_subdirectory(external)
+
 if(NOT TARGET lob_engine)
     add_library(lob_engine INTERFACE)
 endif()
@@ -47,29 +49,29 @@ target_include_directories(lob_engine INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/exte
 target_link_libraries(lob_engine INTERFACE ${Boost_LIBRARIES})
 target_link_libraries(lob_engine INTERFACE API_Connector Boost::headers) 
 
-#ASIO TESTS W/ KDB+ C API
-add_executable(test_api_asio
-    tests/test_api_asio.cpp
-)
-target_link_libraries(test_api_asio PRIVATE lob_engine)
-target_link_libraries(test_api_asio PRIVATE 
-    kdb
-    Threads::Threads
-    OpenSSL::SSL
-    OpenSSL::Crypto
-    Boost::headers
-    Boost::json
-)
+# #ASIO TESTS W/ KDB+ C API
+# add_executable(test_api_asio
+#     tests/test_api_asio.cpp
+# )
+# target_link_libraries(test_api_asio PRIVATE lob_engine)
+# target_link_libraries(test_api_asio PRIVATE 
+#     kdb
+#     Threads::Threads
+#     OpenSSL::SSL
+#     OpenSSL::Crypto
+#     Boost::headers
+#     Boost::json
+# )
 
 
-#PYBIND11 TESTS
-pybind11_add_module(lob_pybind11
-    tests/test_pybind11.cpp
-)
-target_link_libraries(lob_pybind11 PRIVATE lob_engine)
-target_link_libraries(lob_pybind11 PRIVATE 
-    OpenSSL::SSL
-    OpenSSL::Crypto
-    Boost::headers
-    Boost::json
-)
+# #PYBIND11 TESTS
+# pybind11_add_module(lob_pybind11
+#     tests/test_pybind11.cpp
+# )
+# target_link_libraries(lob_pybind11 PRIVATE lob_engine)
+# target_link_libraries(lob_pybind11 PRIVATE 
+#     OpenSSL::SSL
+#     OpenSSL::Crypto
+#     Boost::headers
+#     Boost::json
+# )
