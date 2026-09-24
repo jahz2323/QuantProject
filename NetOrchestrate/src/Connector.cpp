@@ -54,6 +54,7 @@ void WebSocketBinanceConnector::run(const std::string& uri, const std::string& p
                 boost::core::string_view sv(static_cast<const char*>(frame.data), frame.length);
 
                 StreamConfig config = StreamConfig::ExtractStreamConfig(sv);
+                config.printStreamConfig(); // Print the extracted StreamConfig for debugging
                 if (m_routes.count(config.full_stream)) {
                     // Found a matching route, push the frame to the corresponding queue
                     m_routes[config.full_stream]->push(frame);

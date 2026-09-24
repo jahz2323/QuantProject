@@ -1,5 +1,5 @@
-#include "connector.hpp"
-#include "handlers.hpp"
+#include "Connector.hpp"
+#include "Handlers.hpp"
 #include "OrderBook.hpp"
 
 #include <iostream>
@@ -29,7 +29,6 @@ int main() {
     //                            "ethusdt@bookTicker";
     std::string combined_target = "/stream?streams=ethusdt@bookTicker/btcusdt@aggTrade/btcusdt@depth20@100ms";
     
-
     // 3. Instantiate orchestrator factory
     ConnectionFactory factory;
 
@@ -37,19 +36,14 @@ int main() {
 
     // 2. Define full streams and MarketQueues 
     // 4096 bytes per frame, 1024 frames in the queue+
-    auto btcusdt_depth20_queue = std::make_unique<MarketQueue>();
-    auto btcusdt_aggTrade_queue = std::make_unique<MarketQueue>();
-    auto ethusdt_bookTicker_queue = std::make_unique<MarketQueue>();
 
-
-    std::unordered_map<std::string, MarketQueue*> stream_targets = {
-        {"/ws/btcusdt@depth20@100ms", &btcusdt_depth20_queue.get()},
-        {"/ws/btcusdt@aggTrade", &btcusdt_aggTrade_queue.get()},
-        {"/ws/ethusdt@bookTicker", &ethusdt_bookTicker_queue.get()}
-    };
+    std::unordered_map<std::string, std::unique_ptr<MarketQueue>> stream_targets;
+    stream_targets["btcusdt@depth20@100ms"] = std::make_unique<MarketQueue>();
+    stream_targets["btcusdt@aggTrade"] = std::make_unique<MarketQueue>();
+    stream_targets["ethusdt@bookTicker"] = std::make_unique<MarketQueue>();
 
     //4. Launch ocnnections 
-    factory.launch_connections<WebSocketBinanceConnector>(uri, port, combined_target, stream_targets, g_running);
+    factory.launch_connections<WebSocketBinanceConnector>(uri, port, combined_target, std::move(stream_targets), g_running);
 
     std::cout << "[Engine] Pipeline running. Press Ctrl+C to stop.\n";
 

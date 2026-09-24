@@ -9,6 +9,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 
 #include <string>
+#include <iostream>
 
 struct StreamConfig
 {
@@ -22,4 +23,18 @@ struct StreamConfig
     static StreamConfig ExtractStreamConfig(std::string_view raw_json);
     static StreamConfig parse_string_target(std::string_view target);
     static StreamConfig parse_combined_stream(std::string_view combined_stream);
+    void printStreamConfig() const;
+};
+
+struct AggTradeTick {
+    uint64_t agg_trade_id; 
+    double price; 
+    double quantity;
+    uint64_t first_trade_id;
+    uint64_t last_trade_id;
+    uint64_t timestamp;
+    bool is_buyer_maker;
+    bool is_best_match;
+
+    static AggTradeTick parse_agg_trade_tick(std::string_view line);
 };
